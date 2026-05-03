@@ -1,5 +1,5 @@
 """
-InvoiceAI SaaS v4.1 — Production Ready
+InvoiceAI SaaS v4.2 — Production Ready
 Groq AI (ücretsiz) + SQLite/PostgreSQL + JWT Auth + Stripe + Rate Limiting
 """
 
