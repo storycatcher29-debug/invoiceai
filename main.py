@@ -1,5 +1,5 @@
 """
-InvoiceAI SaaS v4.2 — Production Ready
+InvoiceAI SaaS v4.1 — Production Ready
 Groq AI (ücretsiz) + SQLite/PostgreSQL + JWT Auth + Stripe + Rate Limiting
 """
 
@@ -10,8 +10,22 @@ from pydantic import BaseModel
 from groq import Groq
 from sqlalchemy import create_engine, Column, Integer, String, Float, Text
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
-from passlib.hash import bcrypt
+import hashlib, secrets
 from jose import jwt, JWTError
+
+class bcrypt:
+    @staticmethod
+    def hash(password: str) -> str:
+        salt = secrets.token_hex(16)
+        h = hashlib.sha256((salt + password).encode()).hexdigest()
+        return f"{salt}${h}"
+    @staticmethod
+    def verify(password: str, hashed: str) -> bool:
+        try:
+            salt, h = hashed.split("$")
+            return hashlib.sha256((salt + password).encode()).hexdigest() == h
+        except Exception:
+            return False
 from datetime import datetime, timedelta, timezone
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -157,7 +171,7 @@ def analyze_text(text: str) -> tuple[dict, str]:
 def register(request: Request, data: AuthIn, db: Session = Depends(get_db)):
     if db.query(User).filter(User.email == data.email).first():
         raise HTTPException(400, "Bu email zaten kayıtlı")
-    user = User(email=data.email, password=bcrypt.hash(data.password[:72]))
+    user = User(email=data.email, password=bcrypt.hash(data.password))
     db.add(user)
     db.commit()
     return {"success": True}
@@ -166,7 +180,7 @@ def register(request: Request, data: AuthIn, db: Session = Depends(get_db)):
 @limiter.limit("10/minute")
 def login(request: Request, data: AuthIn, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == data.email).first()
-    if not user or not bcrypt.verify(data.password[:72], user.password):
+    if not user or not bcrypt.verify(data.password, user.password):
         raise HTTPException(401, "E-posta veya şifre hatalı")
     return {"token": create_token(user.id)}
 
