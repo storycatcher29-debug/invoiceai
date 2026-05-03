@@ -4,7 +4,6 @@ uvicorn
 python-multipart
 pdfplumber
 sqlalchemy
-bcrypt
 python-jose[cryptography]
 slowapi
 stripe
