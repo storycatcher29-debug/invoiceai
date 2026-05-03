@@ -1,0 +1,10 @@
+fastapi
+groq
+uvicorn
+python-multipart
+pdfplumber
+sqlalchemy
+passlib[bcrypt]
+python-jose[cryptography]
+slowapi
+stripe
