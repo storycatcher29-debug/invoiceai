@@ -157,7 +157,7 @@ def analyze_text(text: str) -> tuple[dict, str]:
 def register(request: Request, data: AuthIn, db: Session = Depends(get_db)):
     if db.query(User).filter(User.email == data.email).first():
         raise HTTPException(400, "Bu email zaten kayıtlı")
-    user = User(email=data.email, password=bcrypt.hash(data.password))
+    user = User(email=data.email, password=bcrypt.hash(data.password[:72]))
     db.add(user)
     db.commit()
     return {"success": True}
@@ -166,7 +166,7 @@ def register(request: Request, data: AuthIn, db: Session = Depends(get_db)):
 @limiter.limit("10/minute")
 def login(request: Request, data: AuthIn, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == data.email).first()
-    if not user or not bcrypt.verify(data.password, user.password):
+    if not user or not bcrypt.verify(data.password[:72], user.password):
         raise HTTPException(401, "E-posta veya şifre hatalı")
     return {"token": create_token(user.id)}
 
